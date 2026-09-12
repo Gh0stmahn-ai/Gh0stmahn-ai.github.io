@@ -1,0 +1,52 @@
+name: Publish forecast site
+
+# This repository is only a front door: the forecast itself lives in
+# Gh0stmahn-ai/cd-election-agent, which rebuilds its site/ folder every day
+# at noon Eastern. This job copies that folder here and publishes it to
+# https://gh0stmahn-ai.github.io/ 40 minutes later. Nothing to install and
+# no tokens: the source repo is public, so a plain clone is enough.
+
+on:
+  schedule:
+    - cron: '40 16 * * *'   # 12:40 PM Eastern during EDT
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Fetch the freshly built site
+        run: |
+          git clone --depth 1 https://github.com/Gh0stmahn-ai/cd-election-agent.git source
+          if [ ! -f source/site/index.html ]; then
+            echo "source/site/index.html is missing - has the forecast repo been pushed?"
+            exit 1
+          fi
+          mkdir -p _site
+          cp -r source/site/. _site/
+          touch _site/.nojekyll
+          echo "Publishing run from: $(grep -o 'Forecast run[^<]*' _site/index.html | head -1 || true)"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
