@@ -9,6 +9,16 @@ name: Publish forecast site
 on:
   schedule:
     - cron: '40 16 * * *'   # 12:40 PM Eastern during EDT
+    # Election night. The Results page and the overview read the live results
+    # file straight from the forecast repo every minute, so these rebuilds only
+    # refresh the copy saved with the pages: every 20 minutes from 5 pm Eastern
+    # on November 3 to the 6th, then every two hours for the rest of November
+    # and over a possible Georgia runoff on December 1.
+    - cron: '25,45 22,23 3 11 *'
+    - cron: '5,25,45 * 4,5 11 *'
+    - cron: '5,25,45 0-5 6 11 *'
+    - cron: '35 */2 6-30 11 *'
+    - cron: '35 */2 1-3 12 *'
   push:
     branches: [main]
   workflow_dispatch: {}
