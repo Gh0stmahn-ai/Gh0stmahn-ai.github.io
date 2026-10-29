@@ -1,14 +1,16 @@
 name: Publish forecast site
 
 # This repository is only a front door: the forecast itself lives in
-# Gh0stmahn-ai/cd-election-agent, which rebuilds its site/ folder every day
-# at noon Eastern. This job copies that folder here and publishes it to
-# https://gh0stmahn-ai.github.io/ 40 minutes later. Nothing to install and
-# no tokens: the source repo is public, so a plain clone is enough.
+# Gh0stmahn-ai/cd-election-agent, which rebuilds its site/ folder twice a
+# day, at 7:07 am and 7:07 pm Eastern. This job copies that folder here and
+# publishes it to https://gh0stmahn-ai.github.io/ 40 minutes after each.
+# Nothing to install and no tokens: the source repo is public, so a plain
+# clone is enough.
 
 on:
   schedule:
-    - cron: '40 16 * * *'   # 12:40 PM Eastern during EDT
+    - cron: '47 11 * * *'   # 7:47 am Eastern during EDT
+    - cron: '47 23 * * *'   # 7:47 pm Eastern during EDT
     # Election night. The Results page and the overview read the live results
     # file straight from the forecast repo every minute, so these rebuilds only
     # refresh the copy saved with the pages: every 20 minutes from 5 pm Eastern
